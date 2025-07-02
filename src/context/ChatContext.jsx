@@ -2,6 +2,7 @@ import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { server } from "../main";
 import toast from "react-hot-toast";
+import PropTypes from "prop-types";
 
 const ChatContext = createContext();
 
@@ -16,7 +17,9 @@ export const ChatProvider = ({ children }) => {
     setPrompt("");
     try {
       const response = await axios({
-        url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyDjeOSygEg4h_sO2LqdbZShCHkFLEyWjmQ",
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${
+          import.meta.env.VITE_GEMINI_API_KEY
+        }`,
         method: "post",
         data: {
           contents: [{ parts: [{ text: prompt }] }],
@@ -32,7 +35,7 @@ export const ChatProvider = ({ children }) => {
       setMessages((prev) => [...prev, message]);
       setNewRequestLoading(false);
 
-      const { data } = await axios.post(
+      await axios.post(
         `${server}/api/chat/${selected}`,
         {
           question: prompt,
@@ -76,7 +79,7 @@ export const ChatProvider = ({ children }) => {
   async function createChat() {
     setCreateLod(true);
     try {
-      const { data } = await axios.post(
+      await axios.post(
         `${server}/api/chat/new`,
         {},
         {
@@ -135,6 +138,7 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     fetchMessages();
   }, [selected]);
+
   return (
     <ChatContext.Provider
       value={{
@@ -160,3 +164,7 @@ export const ChatProvider = ({ children }) => {
 };
 
 export const ChatData = () => useContext(ChatContext);
+
+ChatProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
